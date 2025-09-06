@@ -9,7 +9,7 @@
     "depends": ["base"],
     "data": [
         "security/ir.model.access.csv",
-        "views/nst_sale_like_views.xml"
+        "views/nst_order_views.xml"
     ],
     "application": True
 }
