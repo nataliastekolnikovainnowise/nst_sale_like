@@ -5,7 +5,12 @@ class NstOrder(models.Model):
     _name = "nst.order"
     _description = "NST Order"
 
-    name = fields.Char(string="Order Reference", required=True, copy=False, default="New")
+    name = fields.Char(
+        string="Order Reference",
+        required=True,
+        copy=False,
+        default="New"
+    )
     state = fields.Selection(
         [("draft", "Draft"), ("confirmed", "Confirmed")],
         string="Status",
@@ -37,6 +42,14 @@ class NstOrderLine(models.Model):
     quantity = fields.Float(string="Quantity", default=1.0)
     price_unit = fields.Monetary(string="Unit Price", required=True, default=0.0)
     extra_cost = fields.Monetary(string="Extra Cost", default=0.0)
+
+    base_subtotal = fields.Monetary(
+        string="Base Subtotal",
+        compute="_compute_base_subtotal",
+        store=True,
+        readonly=True,
+    )
+
     currency_id = fields.Many2one(
         "res.currency",
         string="Currency",
@@ -44,3 +57,9 @@ class NstOrderLine(models.Model):
         store=True,
         readonly=True,
     )
+
+    @api.depends("quantity", "price_unit", "extra_cost")
+    def _compute_base_subtotal(self):
+        """Compute base subtotal = quantity * unit price + extra cost."""
+        for line in self:
+            line.base_subtotal = (line.quantity * line.price_unit) + line.extra_cost

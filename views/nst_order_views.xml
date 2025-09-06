@@ -18,12 +18,14 @@
                                     <field name="quantity"/>
                                     <field name="price_unit"/>
                                     <field name="extra_cost"/>
+                                    <field name="base_subtotal" readonly="1"/>
                                 </list>
                                 <form>
                                     <group>
                                         <field name="quantity"/>
                                         <field name="price_unit"/>
                                         <field name="extra_cost"/>
+                                        <field name="base_subtotal" readonly="1"/>
                                     </group>
                                 </form>
                             </field>
