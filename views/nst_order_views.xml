@@ -1,5 +1,18 @@
 <odoo>
-    <!-- Order Form -->
+    <!-- Tree View -->
+    <record id="view_nst_order_tree" model="ir.ui.view">
+        <field name="name">nst.order.tree</field>
+        <field name="model">nst.order</field>
+        <field name="arch" type="xml">
+            <list string="NST Orders">
+                <field name="name"/>
+                <field name="state"/>
+                <field name="amount_base"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
     <record id="view_nst_order_form" model="ir.ui.view">
         <field name="name">nst.order.form</field>
         <field name="model">nst.order</field>
@@ -11,7 +24,9 @@
                         <field name="state"/>
                         <field name="currency_id"/>
                     </group>
+
                     <notebook>
+                        <!-- Order Lines Tab -->
                         <page string="Order Lines">
                             <field name="order_line_ids">
                                 <list editable="bottom">
@@ -30,21 +45,16 @@
                                 </form>
                             </field>
                         </page>
+
+                        <!-- Summary Tab -->
+                        <page string="Summary">
+                            <group>
+                                <field name="amount_base" readonly="1"/>
+                            </group>
+                        </page>
                     </notebook>
                 </sheet>
             </form>
-        </field>
-    </record>
-
-    <!-- Order Tree -->
-    <record id="view_nst_order_tree" model="ir.ui.view">
-        <field name="name">nst.order.tree</field>
-        <field name="model">nst.order</field>
-        <field name="arch" type="xml">
-            <list string="NST Orders">
-                <field name="name"/>
-                <field name="state"/>
-            </list>
         </field>
     </record>
 
@@ -55,7 +65,8 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <!-- Menu -->
+    <!-- Menus -->
     <menuitem id="menu_nst_root" name="NST Demo"/>
-    <menuitem id="menu_nst_order" name="Orders" parent="menu_nst_root" action="action_nst_order"/>
+    <menuitem id="menu_nst_order" name="Orders"
+              parent="menu_nst_root" action="action_nst_order"/>
 </odoo>

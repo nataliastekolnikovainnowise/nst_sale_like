@@ -28,6 +28,21 @@ class NstOrder(models.Model):
         string="Order Lines",
     )
 
+    # NEW: Step 4 - summary total
+    amount_base = fields.Monetary(
+        string="Base Amount",
+        compute="_compute_amount_base",
+        store=True,
+        readonly=True,
+        currency_field="currency_id",
+    )
+
+    @api.depends("order_line_ids.base_subtotal")
+    def _compute_amount_base(self):
+        """Aggregate base_subtotal from all order lines."""
+        for order in self:
+            order.amount_base = sum(order.order_line_ids.mapped("base_subtotal"))
+
 
 class NstOrderLine(models.Model):
     _name = "nst.order.line"
