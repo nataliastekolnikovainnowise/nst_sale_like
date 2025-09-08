@@ -89,29 +89,19 @@ class NstOrderLine(models.Model):
         default=1.0,
     )
 
-    price_unit = fields.Monetary(
+    price_unit = fields.Float(
         string="Unit Price",
         required=True,
         default=0.0,
-        currency_field="currency_id",
     )
 
-    subtotal = fields.Monetary(
+    subtotal = fields.Float(
         string="Subtotal",
         compute="_compute_subtotal",
         store=True,
         readonly=True,
-        currency_field="currency_id",
     )
 
-    currency_id = fields.Many2one(
-        "res.currency",
-        related="order_id.currency_id",
-        store=True,
-        readonly=True,
-    )
-
-    # === Подсчёт суммы строки ===
     @api.depends("quantity", "price_unit")
     def _compute_subtotal(self):
         for line in self:
