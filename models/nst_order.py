@@ -48,7 +48,7 @@ class NstOrder(models.Model):
         help="Manual discount percentage for the entire order (0-100)"
     )
     
-    @api.depends("order_line_ids.subtotal", "discount_percent")
+    @api.depends("order_line_ids.quantity", "order_line_ids.price_unit", "order_line_ids.discount", "discount_percent")
     def _compute_summary(self):
         for order in self:
             subtotals = order.order_line_ids.mapped("subtotal")
@@ -58,12 +58,17 @@ class NstOrder(models.Model):
                 
                 # Применяем общую скидку к итоговой сумме
                 if order.discount_percent:
-                    order.amount_total = subtotal_sum * (1 - order.discount_percent / 100.0)
+                    final_total = subtotal_sum * (1 - order.discount_percent / 100.0)
+                    final_avg = (subtotal_sum / len(subtotals)) * (1 - order.discount_percent / 100.0)
+                    final_max = max(subtotals) * (1 - order.discount_percent / 100.0)
                 else:
-                    order.amount_total = subtotal_sum
-                    
-                order.amount_avg = subtotal_sum / len(subtotals)
-                order.amount_max = max(subtotals)
+                    final_total = subtotal_sum
+                    final_avg = subtotal_sum / len(subtotals)
+                    final_max = max(subtotals)
+                
+                order.amount_total = final_total
+                order.amount_avg = final_avg
+                order.amount_max = final_max
             else:
                 order.amount_total = 0.0
                 order.amount_avg = 0.0
@@ -127,7 +132,7 @@ class NstOrderLine(models.Model):
             # Базовая сумма без скидки
             base_amount = line.quantity * line.price_unit
             
-            # Применяем скидку (всегда от исходного значения)
+            # Применяем скидку строки (всегда от исходного значения)
             if line.discount and 0 <= line.discount <= 100:
                 discount_amount = base_amount * (line.discount / 100.0)
                 line.subtotal = base_amount - discount_amount
