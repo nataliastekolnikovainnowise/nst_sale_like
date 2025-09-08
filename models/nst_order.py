@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError
 
 
 class NstOrder(models.Model):
@@ -44,7 +45,7 @@ class NstOrder(models.Model):
     discount_percent = fields.Float(
         string="Discount %",
         default=0.0,
-        help="Manual discount percentage for the entire order"
+        help="Manual discount percentage for the entire order (0-100)"
     )
     
     @api.depends("order_line_ids.subtotal", "discount_percent")
@@ -67,6 +68,14 @@ class NstOrder(models.Model):
                 order.amount_total = 0.0
                 order.amount_avg = 0.0
                 order.amount_max = 0.0
+    
+    @api.constrains("discount_percent")
+    def _check_discount_percent(self):
+        for record in self:
+            if record.discount_percent < 0:
+                raise ValidationError("Discount percentage cannot be negative.")
+            if record.discount_percent > 100:
+                raise ValidationError("Discount percentage cannot exceed 100%.")
     
     # === State actions ===
     def action_confirm(self):
@@ -103,7 +112,7 @@ class NstOrderLine(models.Model):
     discount = fields.Float(
         string="Discount (%)",
         default=0.0,
-        help="Discount percentage for this line"
+        help="Discount percentage for this line (0-100)"
     )
     subtotal = fields.Float(
         string="Subtotal",
@@ -115,9 +124,32 @@ class NstOrderLine(models.Model):
     @api.depends("quantity", "price_unit", "discount")
     def _compute_subtotal(self):
         for line in self:
-            # Subtotal = quantity * price_unit * (1 - discount/100)
-            # Discount всегда считается от исходного значения
-            price = line.quantity * line.price_unit
-            if line.discount:
-                price = price * (1 - line.discount / 100.0)
-            line.subtotal = price
+            # Базовая сумма без скидки
+            base_amount = line.quantity * line.price_unit
+            
+            # Применяем скидку (всегда от исходного значения)
+            if line.discount and 0 <= line.discount <= 100:
+                discount_amount = base_amount * (line.discount / 100.0)
+                line.subtotal = base_amount - discount_amount
+            else:
+                line.subtotal = base_amount
+    
+    @api.constrains("quantity")
+    def _check_quantity(self):
+        for record in self:
+            if record.quantity < 0:
+                raise ValidationError("Quantity cannot be negative.")
+    
+    @api.constrains("price_unit")
+    def _check_price_unit(self):
+        for record in self:
+            if record.price_unit < 0:
+                raise ValidationError("Unit price cannot be negative.")
+    
+    @api.constrains("discount")
+    def _check_discount(self):
+        for record in self:
+            if record.discount < 0:
+                raise ValidationError("Discount percentage cannot be negative.")
+            if record.discount > 100:
+                raise ValidationError("Discount percentage cannot exceed 100%.")
