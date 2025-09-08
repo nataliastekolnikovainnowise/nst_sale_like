@@ -6,7 +6,7 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <!-- Меню -->
+    <!-- Menu -->
     <menuitem id="menu_nst_order_root" name="NST Orders"/>
     <menuitem id="menu_nst_order" name="Orders"
               parent="menu_nst_order_root" action="action_nst_orders"/>
@@ -21,6 +21,7 @@
                 <field name="customer_id"/>
                 <field name="state"/>
                 <field name="amount_total"/>
+                <field name="discount_percent"/>
             </list>
         </field>
     </record>
@@ -43,36 +44,41 @@
 
                 <sheet>
                     <group>
-                        <field name="name"/>
-                        <field name="customer_id"/>
+                        <field name="name" readonly="state == 'confirmed'"/>
+                        <field name="customer_id" readonly="state == 'confirmed'"/>
                     </group>
 
                     <notebook>
                         <page string="Order Lines">
-                            <field name="order_line_ids" mode="list,form" options="{'no_create': False}">
+                            <field name="order_line_ids" mode="list,form" 
+                                   options="{'no_create': False}"
+                                   readonly="state == 'confirmed'">
                                 <list editable="bottom">
-                                    <field name="product_id"/>
-                                    <field name="quantity"/>
-                                    <field name="price_unit"/>
+                                    <field name="product_id" readonly="parent.state == 'confirmed'"/>
+                                    <field name="quantity" readonly="parent.state == 'confirmed'"/>
+                                    <field name="price_unit" readonly="parent.state == 'confirmed'"/>
+                                    <field name="discount"/>
                                     <field name="subtotal" readonly="1"/>
                                 </list>
                                 <form>
                                     <group>
-                                        <field name="product_id"/>
-                                        <field name="quantity"/>
-                                        <field name="price_unit"/>
+                                        <field name="product_id" readonly="parent.state == 'confirmed'"/>
+                                        <field name="quantity" readonly="parent.state == 'confirmed'"/>
+                                        <field name="price_unit" readonly="parent.state == 'confirmed'"/>
+                                        <field name="discount"/>
                                         <field name="subtotal" readonly="1"/>
                                     </group>
                                 </form>
                             </field>
                         </page>
 
-                        <!-- NEW: Summary tab -->
+                        <!-- Summary tab -->
                         <page string="Summary">
                             <group>
                                 <field name="amount_total" readonly="1"/>
                                 <field name="amount_avg" readonly="1"/>
                                 <field name="amount_max" readonly="1"/>
+                                <field name="discount_percent"/>
                             </group>
                         </page>
                     </notebook>
