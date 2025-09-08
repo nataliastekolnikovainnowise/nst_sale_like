@@ -8,7 +8,8 @@
 
     <!-- Меню -->
     <menuitem id="menu_nst_order_root" name="NST Orders"/>
-    <menuitem id="menu_nst_order" name="Orders" parent="menu_nst_order_root" action="action_nst_orders"/>
+    <menuitem id="menu_nst_order" name="Orders"
+              parent="menu_nst_order_root" action="action_nst_orders"/>
 
     <!-- List View -->
     <record id="view_nst_order_list" model="ir.ui.view">
@@ -36,14 +37,14 @@
                             invisible="state == 'confirmed'"/>
                     <button name="action_set_draft" type="object" string="Set to Draft"
                             invisible="state == 'draft'"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed"/>
                 </header>
 
                 <sheet>
                     <group>
-                        <field name="name" readonly="1"/>
+                        <field name="name"/>
                         <field name="customer_id"/>
-                        <field name="amount_total" readonly="1"/>
                     </group>
 
                     <notebook>
@@ -64,6 +65,15 @@
                                     </group>
                                 </form>
                             </field>
+                        </page>
+
+                        <!-- NEW: Summary tab -->
+                        <page string="Summary">
+                            <group>
+                                <field name="amount_total" readonly="1"/>
+                                <field name="amount_avg" readonly="1"/>
+                                <field name="amount_max" readonly="1"/>
+                            </group>
                         </page>
                     </notebook>
                 </sheet>

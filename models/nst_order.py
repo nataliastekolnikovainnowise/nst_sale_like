@@ -1,6 +1,5 @@
 from odoo import models, fields, api
 
-
 class NstOrder(models.Model):
     _name = "nst.order"
     _description = "NST Order"
@@ -18,6 +17,7 @@ class NstOrder(models.Model):
             ("draft", "Draft"),
             ("confirmed", "Confirmed"),
         ],
+        string="Status",
         default="draft",
     )
 
@@ -27,34 +27,46 @@ class NstOrder(models.Model):
         string="Order Lines",
     )
 
-    amount_total = fields.Monetary(
+    # === Summary fields ===
+    amount_total = fields.Float(
         string="Total Amount",
-        compute="_compute_amount_total",
+        compute="_compute_summary",
         store=True,
-        readonly=True,
-        currency_field="currency_id",
     )
 
-    currency_id = fields.Many2one(
-        "res.currency",
-        string="Currency",
-        default=lambda self: self.env.company.currency_id,
+    amount_avg = fields.Float(
+        string="Average Amount",
+        compute="_compute_summary",
+        store=True,
     )
 
-    # === Логика переключения статусов ===
+    amount_max = fields.Float(
+        string="Max Amount",
+        compute="_compute_summary",
+        store=True,
+    )
+
+    @api.depends("order_line_ids.subtotal")
+    def _compute_summary(self):
+        for order in self:
+            subtotals = order.order_line_ids.mapped("subtotal")
+            if subtotals:
+                order.amount_total = sum(subtotals)
+                order.amount_avg = sum(subtotals) / len(subtotals)
+                order.amount_max = max(subtotals)
+            else:
+                order.amount_total = 0.0
+                order.amount_avg = 0.0
+                order.amount_max = 0.0
+
+    # === State actions ===
     def action_confirm(self):
         for order in self:
             order.state = "confirmed"
 
-    def action_set_to_draft(self):
+    def action_set_draft(self):
         for order in self:
             order.state = "draft"
-
-    # === Подсчёт общей суммы ===
-    @api.depends("order_line_ids.subtotal")
-    def _compute_amount_total(self):
-        for order in self:
-            order.amount_total = sum(order.order_line_ids.mapped("subtotal"))
 
 
 class NstOrderLine(models.Model):
@@ -93,6 +105,7 @@ class NstOrderLine(models.Model):
     )
 
     currency_id = fields.Many2one(
+        "res.currency",
         related="order_id.currency_id",
         store=True,
         readonly=True,
