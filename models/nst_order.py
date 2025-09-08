@@ -5,10 +5,10 @@ from odoo.exceptions import ValidationError
 class NstOrder(models.Model):
     _name = "nst.order"
     _description = "NST Order"
-    
+
     name = fields.Char(string="Order Reference")
     customer_id = fields.Many2one(
-        "res.partner",
+        comodel_name="res.partner",
         string="Customer",
         required=True,
     )
@@ -21,8 +21,8 @@ class NstOrder(models.Model):
         default="draft",
     )
     order_line_ids = fields.One2many(
-        "nst.order.line",
-        "order_id",
+        comodel_name="nst.order.line",
+        inverse_name="order_id",
         string="Order Lines",
     )
     
@@ -65,7 +65,7 @@ class NstOrder(models.Model):
                     final_total = subtotal_sum
                     final_avg = subtotal_sum / len(subtotals)
                     final_max = max(subtotals)
-                
+                    
                 order.amount_total = final_total
                 order.amount_avg = final_avg
                 order.amount_max = final_max
@@ -73,7 +73,7 @@ class NstOrder(models.Model):
                 order.amount_total = 0.0
                 order.amount_avg = 0.0
                 order.amount_max = 0.0
-    
+
     @api.constrains("discount_percent")
     def _check_discount_percent(self):
         for record in self:
@@ -81,12 +81,12 @@ class NstOrder(models.Model):
                 raise ValidationError("Discount percentage cannot be negative.")
             if record.discount_percent > 100:
                 raise ValidationError("Discount percentage cannot exceed 100%.")
-    
+
     # === State actions ===
     def action_confirm(self):
         for order in self:
             order.state = "confirmed"
-    
+
     def action_set_draft(self):
         for order in self:
             order.state = "draft"
@@ -95,14 +95,14 @@ class NstOrder(models.Model):
 class NstOrderLine(models.Model):
     _name = "nst.order.line"
     _description = "NST Order Line"
-    
+
     order_id = fields.Many2one(
-        "nst.order",
+        comodel_name="nst.order",
         string="Order",
         ondelete="cascade",
     )
     product_id = fields.Many2one(
-        "product.product",
+        comodel_name="product.product",
         string="Product",
     )
     quantity = fields.Float(
@@ -125,7 +125,7 @@ class NstOrderLine(models.Model):
         store=True,
         readonly=True,
     )
-    
+
     @api.depends("quantity", "price_unit", "discount")
     def _compute_subtotal(self):
         for line in self:
@@ -138,19 +138,19 @@ class NstOrderLine(models.Model):
                 line.subtotal = base_amount - discount_amount
             else:
                 line.subtotal = base_amount
-    
+
     @api.constrains("quantity")
     def _check_quantity(self):
         for record in self:
             if record.quantity < 0:
                 raise ValidationError("Quantity cannot be negative.")
-    
+
     @api.constrains("price_unit")
     def _check_price_unit(self):
         for record in self:
             if record.price_unit < 0:
                 raise ValidationError("Unit price cannot be negative.")
-    
+
     @api.constrains("discount")
     def _check_discount(self):
         for record in self:
