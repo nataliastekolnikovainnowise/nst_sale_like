@@ -101,10 +101,14 @@ class NstOrderLine(models.Model):
         string="Order",
         ondelete="cascade",
     )
-    product_id = fields.Many2one(
-        comodel_name="product.product",
-        string="Product",
+    product_name = fields.Char(
+        string="Product Name",
+        required=True,
     )
+    # product_id = fields.Many2one(
+    #     comodel_name="product.product",
+    #     string="Product",
+    # )
     quantity = fields.Float(
         string="Quantity",
         default=1.0,
