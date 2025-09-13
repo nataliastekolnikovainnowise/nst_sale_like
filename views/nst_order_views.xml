@@ -1,0 +1,139 @@
+<odoo>
+    <!-- Action Window -->
+    <record id="action_nst_orders" model="ir.actions.act_window">
+        <field name="name">NST Orders</field>
+        <field name="res_model">nst.order</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_nst_order_root" name="NST Orders"/>
+    <menuitem id="menu_nst_order" name="Orders"
+              parent="menu_nst_order_root" action="action_nst_orders"/>
+
+    <!-- List View -->
+    <record id="view_nst_order_list" model="ir.ui.view">
+        <field name="name">nst.order.list</field>
+        <field name="model">nst.order</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="state"/>
+                <field name="amount_total"/>
+                <field name="discount_percent"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_nst_order_form" model="ir.ui.view">
+        <field name="name">nst.order.form</field>
+        <field name="model">nst.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" type="object" string="Confirm"
+                            class="btn-primary"
+                            invisible="state == 'confirmed'"/>
+                    <button name="action_set_draft" type="object" string="Set to Draft"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed"/>
+                </header>
+
+                <sheet>
+                    <group>
+                        <field name="name" readonly="state == 'confirmed'"/>
+                        <field name="customer_id" readonly="state == 'confirmed'"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Order Lines">
+                            <field name="order_line_ids" mode="list,form" 
+                                   options="{'no_create': False}"
+                                   readonly="state == 'confirmed'">
+                                <list editable="bottom">
+                                    <field name="product_name" readonly="parent.state == 'confirmed'"/>
+                                    <field name="quantity" readonly="parent.state == 'confirmed'"/>
+                                    <field name="price_unit" readonly="parent.state == 'confirmed'"/>
+                                    <field name="discount"/>
+                                    <field name="subtotal" readonly="1"/>
+                                </list>
+                                <form>
+                                    <group>
+                                        <field name="product_name" readonly="parent.state == 'confirmed'"/>
+                                        <field name="quantity" readonly="parent.state == 'confirmed'"/>
+                                        <field name="price_unit" readonly="parent.state == 'confirmed'"/>
+                                        <field name="discount"/>
+                                        <field name="subtotal" readonly="1"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+
+                        <!-- Summary tab -->
+                        <page string="Summary">
+                            <group>
+                                <field name="amount_total" readonly="1"/>
+                                <field name="amount_avg" readonly="1"/>
+                                <field name="amount_max" readonly="1"/>
+                                <field name="discount_percent"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action: list order lines -->
+    <record id="action_nst_order_line" model="ir.actions.act_window">
+        <field name="name">NST Order Lines</field>
+        <field name="res_model">nst.order.line</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- MENU: пункт "Order Lines" под корнем -->
+    <menuitem id="menu_nst_order_line"
+              name="Order Lines"
+              parent="menu_nst_order_root"
+              action="action_nst_order_line"
+              sequence="20"/>
+
+    <!-- LIST-вью для линий заказов -->
+    <record id="view_nst_order_line_list" model="ir.ui.view">
+        <field name="name">nst.order.line.list</field>
+        <field name="model">nst.order.line</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="order_id"/>
+                <field name="product_name"/>
+                <field name="quantity"/>
+                <field name="price_unit"/>
+                <field name="discount"/>
+                <field name="subtotal"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- FORM-вью для линий -->
+    <record id="view_nst_order_line_form" model="ir.ui.view">
+        <field name="name">nst.order.line.form</field>
+        <field name="model">nst.order.line</field>
+        <field name="arch" type="xml">
+            <form string="NST Order Line">
+                <sheet>
+                    <group>
+                        <field name="order_id"/>
+                        <field name="product_name"/>
+                        <field name="quantity"/>
+                        <field name="price_unit"/>
+                        <field name="discount"/>
+                        <field name="subtotal" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
